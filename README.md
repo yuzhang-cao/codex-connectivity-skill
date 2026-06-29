@@ -40,8 +40,8 @@ codex-connectivity-skill/
 ├── references/
 │   └── diagnostic-checklist.md
 └── scripts/
-    ├── diagnose_codex_connectivity.sh
-    └── diagnose_codex_connectivity.ps1
+    ├── proxy_assist.sh
+    └── proxy_assist.ps1
 ```
 
 ## Usage examples
