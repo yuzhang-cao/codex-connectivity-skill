@@ -1,10 +1,34 @@
-# Codex Connectivity Troubleshooter Skill
+# Codex Proxy Assist Skill
 
-A trilingual Skill for troubleshooting Codex and developer-tool startup, login, OAuth callback, local port, proxy, DNS, TLS, firewall, and cross-region or restricted-network issues. It is designed for users in any region, including mainland China users accessing overseas services, overseas users accessing China-hosted services, and users on campus, company, proxy, VPN, or TUN networks.
+A trilingual auxiliary Skill for Codex, AI CLI tools, IDE extensions, and related developer tools. Its purpose is not mainly to troubleshoot failures. Its purpose is to help a CLI continue login or web-access tasks when the target website, web app, API, or software page requires a proxy path that is already available through the user's local VPN/proxy software.
 
-面向跨地区网络环境的三语 Skill，用于排查 Codex 及相关开发工具的启动失败、登录回调失败、本地端口错误、代理不一致、DNS/TLS、系统防火墙、校园网/公司网限制等问题。适用对象不只限于中国用户，也包括海外用户访问中国服务、中国用户访问海外服务，以及任何受限网络、代理、VPN、TUN 环境下的用户。
+面向 Codex、AI CLI、IDE 插件及相关开发工具的三语辅助 Skill。它的主要目的不是“排查故障”，而是当 CLI 需要登录某些网页、网站、Web 应用、API 或软件页面时，如果直接访问不上，就自动从系统可见的代理设置、环境变量和本机监听端口中寻找本机 VPN/代理软件提供的网页代理端口，然后通过这个代理端口继续执行刚刚失败的登录或访问任务。
 
-地域を限定しない三言語 Skill です。Codex および関連開発ツールの起動失敗、ログイン・OAuth コールバック、localhost ポート、プロキシ不整合、DNS/TLS、ファイアウォール、大学・企業ネットワーク、VPN/TUN 環境の問題を診断します。中国本土から海外サービスへアクセスする場合だけでなく、海外から中国向けサービスへアクセスする場合にも利用できます。
+Codex、AI CLI、IDE 拡張、関連開発ツール向けの三言語補助 Skill です。主目的は単なる診断ではありません。CLI がログインページ、Web サイト、Web アプリ、API、またはソフトウェア画面へ直接アクセスできない場合に、OS から見えるプロキシ設定、環境変数、localhost の待受ポートからローカル VPN/プロキシソフトの Web プロキシポートを見つけ、そのポート経由で失敗したログインまたはアクセス操作を続行するための Skill です。
+
+## Core behavior
+
+```text
+1. Codex / AI CLI tries to open or log in to a target website, web app, API, or software page.
+2. Direct CLI access fails.
+3. The Skill checks whether a browser or local VPN/proxy path may already work.
+4. The Skill discovers system-visible local proxy candidates:
+   - HTTP_PROXY / HTTPS_PROXY / ALL_PROXY / NO_PROXY
+   - OS proxy settings
+   - WinHTTP proxy on Windows
+   - localhost listening ports commonly used by local proxy software
+   - user-provided browser proxy port
+5. The Skill tests candidate ports against the target domain.
+6. If a candidate works, the Skill retries the same failed CLI task once with temporary proxy variables.
+7. If the retry still fails, it falls back to DNS, TLS, callback-port, and network-route analysis.
+```
+
+## What this Skill is not
+
+- It is not primarily a troubleshooting manual.
+- It does not read VPN credentials, VPN private configuration files, cookies, OAuth codes, or API keys.
+- It does not permanently modify shell startup files unless the user explicitly asks.
+- It does not provide instructions to violate laws, campus rules, company policy, or platform terms.
 
 ## Files
 
@@ -20,44 +44,23 @@ codex-connectivity-skill/
     └── diagnose_codex_connectivity.ps1
 ```
 
-## Usage
-
-Copy the whole directory into your Skills directory or repository, depending on your Codex/agent environment.
+## Usage examples
 
 Use it when a user says something like:
 
-- “Codex 登录失败，浏览器显示成功但是应用没有登录。”
-- “Codex login failed after changing ports.”
-- “CLI works in browser but not in terminal behind a proxy.”
-- “I am in the US, but a China-hosted developer service times out.”
-- “中国から海外 API に接続できません。”
-- “海外から中国向けサービスにアクセスすると DNS/TLS で失敗します。”
-- “ログイン後、localhost のコールバックで止まります。”
+- “Codex 登录网页时打不开，但浏览器走 VPN 可以打开。”
+- “AI CLI needs to log in to a web page, but only the browser proxy works.”
+- “CLI 访问某个网站失败，能不能自动找本机代理端口重试？”
+- “美国网络访问中国网站失败，但浏览器代理可以打开。”
+- “中国から海外 API に接続できません。ブラウザでは開けます。”
+- “CLI のログイン画面だけプロキシを通らず失敗します。”
 
-## Manual GitHub publishing
-
-```bash
-cd /path/to/codex-connectivity-skill
-git init
-git branch -M main
-git add .
-git commit -m "Add Codex connectivity troubleshooting skill"
-git remote add origin https://github.com/<your-user>/codex-connectivity-skill.git
-git push -u origin main
-```
-
-Suggested repository name:
+## Suggested repository description
 
 ```text
-codex-connectivity-skill
-```
-
-Suggested description:
-
-```text
-Trilingual Skill for troubleshooting Codex startup, login, localhost callback port, proxy, DNS, TLS, firewall, and cross-region or restricted-network issues.
+A trilingual Proxy Assist Skill for Codex and AI CLI tools: discover system-visible local proxy ports and retry failed login or web-access tasks through temporary proxy settings.
 ```
 
 ## Safety
 
-This Skill does not ask users to paste tokens, cookies, OAuth codes, API keys, or full sensitive callback URLs. It focuses on legitimate diagnostics and configuration: local ports, loopback bypass, proxy consistency, DNS, TLS, browser profiles, target-domain reachability, and GitHub/OpenAI auth separation.
+This Skill only uses system-visible proxy information and localhost listening ports. It does not access VPN internals or sensitive credentials. It uses temporary proxy variables first and keeps `NO_PROXY=localhost,127.0.0.1,::1` for local callback safety.
